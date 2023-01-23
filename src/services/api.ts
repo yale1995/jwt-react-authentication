@@ -1,5 +1,7 @@
 import axios, { AxiosError } from 'axios'
-import { parseCookies, setCookie } from 'nookies'
+import Router from 'next/router';
+import { destroyCookie, parseCookies, setCookie } from 'nookies'
+import {SignOut} from '../contexts/AuthContext'
 
 interface AxiosErrorResponse {
     code?: string;
@@ -40,14 +42,14 @@ api.interceptors.response.use(response => {
                         maxAge: 60 * 60 * 24 * 30, // 30 days
                         path: '/'
                     })
-                    
+
                     api.defaults.headers['Authorization'] = `Bearer ${token}`;
                     failedRequestQueue.forEach((request) => request.onSuccess(token))
                     failedRequestQueue = []
                 }).catch(Error => {
                     failedRequestQueue.forEach((request) => request.onFailure(Error))
                     failedRequestQueue = []
-                }).finally(() => {isRefreshing = false})
+                }).finally(() => { isRefreshing = false })
             }
             return new Promise((resolve, reject) => {
                 failedRequestQueue.push({
@@ -62,7 +64,8 @@ api.interceptors.response.use(response => {
                 })
             })
         } else {
-            // logout user
+            SignOut()
         }
     }
+    return Promise.reject(Error)
 })
