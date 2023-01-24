@@ -1,15 +1,15 @@
-import { GetServerSideProps } from 'next'
 import { FormEvent, useState, useContext } from 'react'
 import { AuthContext } from '../contexts/AuthContext'
-import {parseCookies} from 'nookies'
+import { withSSRGuest } from '../utils/withSSRGuest'
 import styles from '../styles/Home.module.css'
 import Head from 'next/head'
+
 
 export default function Home() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
-  const {signIn, isAuthenticated} = useContext(AuthContext)
+  const { signIn, isAuthenticated } = useContext(AuthContext)
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
@@ -36,18 +36,8 @@ export default function Home() {
   )
 }
 
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const cookies = parseCookies(ctx)
-
-  if(cookies['nextauth.token']) {
-    return {
-      redirect: {
-        destination: '/dashboard',
-        permanent: false
-      }
-    }
-  }
+export const getServerSideProps = withSSRGuest(async (ctx) => {
   return {
     props: {}
   }
-}
+})
